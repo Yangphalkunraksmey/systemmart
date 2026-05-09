@@ -1,46 +1,74 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --bg:        #0D0D14;
-  --bg2:       #13131F;
-  --bg3:       #1A1A2E;
-  --bg4:       #21213A;
-  --border:    #2A2A45;
-  --border2:   #353560;
-  --text:      #E8E8F0;
-  --text2:     #9090B0;
-  --text3:     #55556A;
-  --purple1:   #7C3AED;
-  --purple2:   #8B5CF6;
-  --purple3:   #A855F7;
-  --purple4:   #6D28D9;
-  --purple-bg: rgba(139,92,246,0.12);
-  --purple-border: rgba(139,92,246,0.3);
-  --red:       #EF4444;
-  --red-bg:    rgba(239,68,68,0.1);
-  --amber:     #F59E0B;
-  --amber-bg:  rgba(245,158,11,0.1);
-  --green:     #22C55E;
-  --green-bg:  rgba(34,197,94,0.1);
-  --blue:      #3B82F6;
-  --blue-bg:   rgba(59,130,246,0.1);
-}
-
 body {
   font-family: 'Segoe UI', sans-serif;
-  background: var(--bg);
-  color: var(--text);
   font-size: 14px;
+  transition: background .2s, color .2s;
+}
+
+/* LIGHT MODE */
+body.light {
+  --bg:           #F0F4F8;
+  --bg2:          #FFFFFF;
+  --bg3:          #F7FAFB;
+  --border:       #E2EBF0;
+  --text:         #1A2B3C;
+  --text2:        #6B8094;
+  --text3:        #A0B4C0;
+  --shadow:       0 2px 12px rgba(0,0,0,0.06);
+  --shadow2:      0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* DARK MODE */
+body.dark {
+  --bg:           #0D1117;
+  --bg2:          #161B22;
+  --bg3:          #1C2128;
+  --border:       #21262D;
+  --text:         #E6EDF3;
+  --text2:        #7D8590;
+  --text3:        #484F58;
+  --shadow:       0 2px 12px rgba(0,0,0,0.3);
+  --shadow2:      0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* SHARED COLORS */
+body {
+  --accent:       #2BBFB0;
+  --accent-dark:  #1FA89A;
+  --accent-light: rgba(43,191,176,0.12);
+  --blue:         #5B8DEF;
+  --blue-light:   rgba(91,141,239,0.1);
+  --danger:       #F87171;
+  --danger-bg:    rgba(248,113,113,0.1);
+  --warn:         #FBBF24;
+  --warn-bg:      rgba(251,191,36,0.1);
+  --success:      #34D399;
+  --success-bg:   rgba(52,211,153,0.1);
+  background:     var(--bg);
+  color:          var(--text);
 }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
-::-webkit-scrollbar-thumb { background: var(--purple1); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
 
 input, select, textarea {
   font-family: inherit;
   font-size: 13px;
   color: var(--text);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  outline: none;
+  transition: border .15s;
+  width: 100%;
 }
 
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+}
+
+select option { background: var(--bg2); }
 button { cursor: pointer; font-family: inherit; }
