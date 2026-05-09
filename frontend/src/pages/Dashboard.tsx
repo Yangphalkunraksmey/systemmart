@@ -12,16 +12,10 @@ interface DashboardData {
   recentSales: { id: string; cashier_name: string; total: number; created_at: string }[];
 }
 
-const card = (label: string, value: string, color: string, icon: string) => (
-  <div style={{
-    background: '#1e293b', border: '1px solid #334155', borderRadius: 10,
-    padding: 16, flex: 1, minWidth: 140
-  }}>
-    <div style={{ fontSize: 22, marginBottom: 6 }}>{icon}</div>
-    <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</div>
-    <div style={{ fontSize: 22, fontWeight: 600, color, marginTop: 4 }}>{value}</div>
-  </div>
-);
+const s = {
+  card: { background: 'var(--bg2)', borderRadius: 12, border: '1px solid var(--border)', boxShadow: 'var(--shadow)' } as React.CSSProperties,
+  metric: { background: 'var(--bg2)', borderRadius: 12, border: '1px solid var(--border)', boxShadow: 'var(--shadow)', padding: 16 } as React.CSSProperties,
+};
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -33,66 +27,74 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ color: '#64748b' }}>Loading dashboard...</div>;
-  if (!data) return <div style={{ color: '#ef4444' }}>Failed to load dashboard</div>;
+  if (loading) return <div style={{ color: 'var(--text2)', padding: 40, textAlign: 'center' }}>Loading dashboard...</div>;
+  if (!data) return <div style={{ color: 'var(--danger)', padding: 40, textAlign: 'center' }}>Failed to load</div>;
 
   const maxQty = data.topProducts[0]?.total_qty || 1;
 
   return (
     <div>
-      <h2 style={{ marginBottom: 20, fontSize: 20, fontWeight: 600 }}>Dashboard</h2>
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 20 }}>Dashboard</h2>
+
+      {/* Welcome banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, var(--accent), var(--blue))',
+        borderRadius: 14, padding: '20px 24px', marginBottom: 20, color: '#fff'
+      }}>
+        <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Welcome back! 👋</div>
+        <div style={{ fontSize: 13, opacity: .85 }}>Here's what's happening in your mart today.</div>
+      </div>
 
       {/* Metrics */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
-        {card('Total Revenue',   '$' + Number(data.totalRevenue).toFixed(2),  '#22c55e', '💵')}
-        {card('Total Expenses',  '$' + Number(data.totalExpenses).toFixed(2), '#f59e0b', '💸')}
-        {card('Net Profit',      '$' + Number(data.netProfit).toFixed(2),     data.netProfit >= 0 ? '#22c55e' : '#ef4444', '📈')}
-        {card('Total Sales',     String(data.totalSales),                     '#3b82f6', '🧾')}
-        {card('Low Stock',       String(data.lowStockCount),                  '#f59e0b', '⚠️')}
-        {card('Out of Stock',    String(data.outOfStockCount),                '#ef4444', '📭')}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 20 }}>
+        {[
+          { label: 'Total Revenue',  val: '$'+Number(data.totalRevenue).toFixed(2),  color: 'var(--accent)' },
+          { label: 'Total Expenses', val: '$'+Number(data.totalExpenses).toFixed(2), color: 'var(--warn)' },
+          { label: 'Net Profit',     val: '$'+Number(data.netProfit).toFixed(2),     color: data.netProfit>=0?'var(--accent)':'var(--danger)' },
+          { label: 'Total Sales',    val: String(data.totalSales),                   color: 'var(--blue)' },
+          { label: 'Low Stock',      val: String(data.lowStockCount),                color: 'var(--warn)' },
+          { label: 'Out of Stock',   val: String(data.outOfStockCount),              color: 'var(--danger)' },
+        ].map(m => (
+          <div key={m.label} style={s.metric}>
+            <div style={{ fontSize: 11, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: .8, marginBottom: 6 }}>{m.label}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: m.color }}>{m.val}</div>
+          </div>
+        ))}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {/* Top Products */}
-        <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: 16 }}>
-          <h3 style={{ marginBottom: 14, fontSize: 14, fontWeight: 600 }}>Top Products</h3>
-          {data.topProducts.length === 0 && <div style={{ color: '#64748b' }}>No sales yet</div>}
-          {data.topProducts.map(p => (
-            <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <span style={{ minWidth: 120, fontSize: 12, color: '#94a3b8' }}>{p.name}</span>
-              <div style={{ flex: 1, background: '#0f172a', borderRadius: 3, height: 14 }}>
-                <div style={{
-                  width: `${Math.round(p.total_qty / maxQty * 100)}%`,
-                  background: '#22c55e', height: '100%', borderRadius: 3
-                }} />
+        <div style={{ ...s.card, padding: 16 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 14 }}>Top Products</div>
+          {data.topProducts.length === 0
+            ? <div style={{ color: 'var(--text3)', fontSize: 13 }}>No sales yet</div>
+            : data.topProducts.map(p => (
+              <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <span style={{ minWidth: 110, fontSize: 12, color: 'var(--text2)' }}>{p.name}</span>
+                <div style={{ flex: 1, background: 'var(--bg3)', borderRadius: 4, height: 8, overflow: 'hidden' }}>
+                  <div style={{ width: `${Math.round(p.total_qty/maxQty*100)}%`, background: 'var(--accent)', height: '100%', borderRadius: 4 }} />
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 600, minWidth: 30, textAlign: 'right', color: 'var(--text)' }}>{p.total_qty}</span>
               </div>
-              <span style={{ fontSize: 12, fontWeight: 500, minWidth: 40, textAlign: 'right' }}>
-                {p.total_qty}
-              </span>
-            </div>
-          ))}
+            ))
+          }
         </div>
 
         {/* Recent Sales */}
-        <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: 16 }}>
-          <h3 style={{ marginBottom: 14, fontSize: 14, fontWeight: 600 }}>Recent Sales</h3>
-          {data.recentSales.length === 0 && <div style={{ color: '#64748b' }}>No sales yet</div>}
-          {data.recentSales.map(s => (
-            <div key={s.id} style={{
-              display: 'flex', justifyContent: 'space-between',
-              padding: '8px 0', borderBottom: '1px solid #334155', fontSize: 13
-            }}>
-              <div>
-                <div style={{ fontWeight: 500 }}>{s.cashier_name}</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>
-                  {new Date(s.created_at).toLocaleString()}
+        <div style={{ ...s.card, padding: 16 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 14 }}>Recent Sales</div>
+          {data.recentSales.length === 0
+            ? <div style={{ color: 'var(--text3)', fontSize: 13 }}>No sales yet</div>
+            : data.recentSales.map(s => (
+              <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{s.cashier_name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>{new Date(s.created_at).toLocaleString()}</div>
                 </div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>${Number(s.total).toFixed(2)}</div>
               </div>
-              <div style={{ color: '#22c55e', fontWeight: 500 }}>
-                ${Number(s.total).toFixed(2)}
-              </div>
-            </div>
-          ))}
+            ))
+          }
         </div>
       </div>
     </div>
