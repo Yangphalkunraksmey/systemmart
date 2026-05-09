@@ -18,7 +18,8 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://systemmart.vercel.app'
+    'https://systemmart.vercel.app',
+    'https://systemmart-e2ghwnl8f-yang-phalkunraksmeys-projects.vercel.app'
   ]
 }));
 app.use(express.json());
