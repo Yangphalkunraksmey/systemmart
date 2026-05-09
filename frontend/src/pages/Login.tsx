@@ -30,65 +30,83 @@ export default function Login() {
     <div style={{
       minHeight: '100vh', display: 'flex',
       alignItems: 'center', justifyContent: 'center',
-      background: '#0f172a'
+      background: 'var(--bg)'
     }}>
+      {/* Background glow */}
       <div style={{
-        background: '#1e293b', padding: 32, borderRadius: 12,
-        width: 360, border: '1px solid #334155'
+        position: 'fixed', top: '30%', left: '50%', transform: 'translate(-50%,-50%)',
+        width: 400, height: 400, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)',
+        pointerEvents: 'none'
+      }} />
+
+      <div style={{
+        background: 'var(--bg2)', padding: 36, borderRadius: 16,
+        width: 380, border: '1px solid var(--border)',
+        boxShadow: '0 0 40px rgba(139,92,246,0.1)', position: 'relative'
       }}>
-        <h1 style={{
-          textAlign: 'center', marginBottom: 6,
-          fontSize: 24, fontWeight: 700, color: '#fff'
-        }}>
-          System<span style={{ color: '#22c55e' }}>Mart</span>
-        </h1>
-        <p style={{ textAlign: 'center', color: '#64748b', marginBottom: 24, fontSize: 13 }}>
-          Sign in to your account
-        </p>
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{
+            fontSize: 28, fontWeight: 700, letterSpacing: '-0.5px',
+            background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            marginBottom: 4
+          }}>SystemMart</div>
+          <div style={{ fontSize: 13, color: 'var(--text3)' }}>Sign in to your account</div>
+        </div>
 
         {error && (
           <div style={{
-            background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444',
-            color: '#ef4444', padding: '8px 12px', borderRadius: 6,
+            background: 'var(--red-bg)', border: '1px solid var(--red)',
+            color: 'var(--red)', padding: '10px 14px', borderRadius: 8,
             marginBottom: 16, fontSize: 13
-          }}>
-            {error}
-          </div>
+          }}>{error}</div>
         )}
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', color: '#94a3b8', fontSize: 12, marginBottom: 4 }}>
-              EMAIL
+            <label style={{ display: 'block', color: 'var(--text3)', fontSize: 11, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+              Email
             </label>
             <input
               type="email" value={email} onChange={e => setEmail(e.target.value)}
               required placeholder="admin@systemmart.com"
               style={{
-                width: '100%', padding: '9px 12px', background: '#0f172a',
-                border: '1px solid #334155', borderRadius: 6, color: '#fff',
+                width: '100%', padding: '10px 14px',
+                background: 'var(--bg3)', border: '1px solid var(--border2)',
+                borderRadius: 8, color: 'var(--text)', fontSize: 13,
+                outline: 'none', transition: 'border .15s'
               }}
+              onFocus={e => e.target.style.borderColor = '#8B5CF6'}
+              onBlur={e => e.target.style.borderColor = 'var(--border2)'}
             />
           </div>
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', color: '#94a3b8', fontSize: 12, marginBottom: 4 }}>
-              PASSWORD
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: 'block', color: 'var(--text3)', fontSize: 11, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+              Password
             </label>
             <input
               type="password" value={password} onChange={e => setPassword(e.target.value)}
               required placeholder="••••••••"
               style={{
-                width: '100%', padding: '9px 12px', background: '#0f172a',
-                border: '1px solid #334155', borderRadius: 6, color: '#fff',
+                width: '100%', padding: '10px 14px',
+                background: 'var(--bg3)', border: '1px solid var(--border2)',
+                borderRadius: 8, color: 'var(--text)', fontSize: 13,
+                outline: 'none', transition: 'border .15s'
               }}
+              onFocus={e => e.target.style.borderColor = '#8B5CF6'}
+              onBlur={e => e.target.style.borderColor = 'var(--border2)'}
             />
           </div>
           <button type="submit" disabled={loading} style={{
-            width: '100%', padding: '10px', background: '#22c55e',
-            color: '#000', border: 'none', borderRadius: 6,
-            fontWeight: 600, fontSize: 14
+            width: '100%', padding: '11px',
+            background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
+            color: '#fff', border: 'none', borderRadius: 8,
+            fontWeight: 600, fontSize: 14, letterSpacing: '.3px',
+            opacity: loading ? 0.7 : 1, transition: 'opacity .15s'
           }}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Signing in...' : 'Sign In →'}
           </button>
         </form>
       </div>
