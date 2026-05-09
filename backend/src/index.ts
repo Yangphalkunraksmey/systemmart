@@ -14,7 +14,13 @@ import reportRoutes    from './routes/reports';
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:5173' }));
+
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://systemmart.vercel.app'
+  ]
+}));
 app.use(express.json());
 
 app.use('/api/auth',       authRoutes);
