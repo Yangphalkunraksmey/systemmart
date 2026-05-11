@@ -3,15 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
+import { Sun, Moon } from 'lucide-react';
 
 export default function Login() {
-  const [email, setEmail]       = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]       = useState('');
-  const [loading, setLoading]   = useState(false);
-  const { login }               = useAuthStore();
-  const { isDark, toggle }      = useThemeStore();
-  const navigate                = useNavigate();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuthStore();
+  const { isDark, toggle } = useThemeStore();
+  const navigate = useNavigate();
 
   const handleToggle = () => {
     toggle();
@@ -41,7 +42,7 @@ export default function Login() {
     }}>
       {/* Theme toggle top right */}
       <div style={{ position: 'absolute', top: 20, right: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 12, color: 'var(--text2)' }}>{isDark ? '🌙' : '☀️'}</span>
+        {isDark ? <Moon size={14} color='var(--text2)' /> : <Sun size={14} color='var(--text2)' />}
         <div onClick={handleToggle} style={{
           width: 44, height: 24, borderRadius: 12,
           background: isDark ? 'var(--accent)' : '#CBD5E1',
