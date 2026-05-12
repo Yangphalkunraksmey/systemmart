@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 
+
 const card: React.CSSProperties = { background: 'var(--bg2)', borderRadius: 12, border: '1px solid var(--border)', boxShadow: 'var(--shadow)' };
 
 interface ReportData {
@@ -12,6 +13,43 @@ interface ReportData {
   outOfStockCount: number;
   topProducts: { name: string; total_qty: number }[];
   recentSales: { id: string; cashier_name: string; total: number; created_at: string }[];
+}
+
+function LowStockList() {
+  const [items, setItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    api.get('/products').then(({ data }) => {
+      const low = data.filter((p: any) => p.stock <= p.reorder_lvl);
+      setItems(low);
+    });
+  }, []);
+
+  if (items.length === 0) return (
+    <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text3)', fontSize: 13 }}>
+      All items well stocked!
+    </div>
+  );
+
+  return (
+    <div>
+      {items.map((item, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{item.name}</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)' }}>Reorder level: {item.reorder_lvl}</div>
+          </div>
+          <span style={{
+            padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+            background: item.stock === 0 ? 'var(--danger-bg)' : 'var(--warn-bg)',
+            color: item.stock === 0 ? 'var(--danger)' : 'var(--warn)'
+          }}>
+            {item.stock === 0 ? 'Out of stock' : item.stock + ' left'}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function Reports() {
@@ -42,12 +80,12 @@ export default function Reports() {
       {/* Metrics */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Total Revenue',  val: '$'+totalRev.toFixed(2),  color: 'var(--accent)' },
-          { label: 'Total Expenses', val: '$'+totalExp.toFixed(2),  color: 'var(--warn)'   },
-          { label: 'Net Profit',     val: '$'+netProfit.toFixed(2), color: netProfit>=0?'var(--accent)':'var(--danger)' },
-          { label: 'Total Sales',    val: String(data.totalSales),  color: 'var(--blue)'   },
-          { label: 'Profit Margin',  val: margin+'%',               color: 'var(--accent)' },
-          { label: 'Avg Sale Value', val: '$'+avgSale,              color: 'var(--blue)'   },
+          { label: 'Total Revenue', val: '$' + totalRev.toFixed(2), color: 'var(--accent)' },
+          { label: 'Total Expenses', val: '$' + totalExp.toFixed(2), color: 'var(--warn)' },
+          { label: 'Net Profit', val: '$' + netProfit.toFixed(2), color: netProfit >= 0 ? 'var(--accent)' : 'var(--danger)' },
+          { label: 'Total Sales', val: String(data.totalSales), color: 'var(--blue)' },
+          { label: 'Profit Margin', val: margin + '%', color: 'var(--accent)' },
+          { label: 'Avg Sale Value', val: '$' + avgSale, color: 'var(--blue)' },
         ].map(m => (
           <div key={m.label} style={{ ...card, padding: 16 }}>
             <div style={{ fontSize: 11, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: .8, marginBottom: 6 }}>{m.label}</div>
@@ -62,9 +100,9 @@ export default function Reports() {
         <div style={{ ...card, padding: 18 }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 16 }}>Revenue vs Expenses</div>
           {[
-            { label: 'Revenue',  val: totalRev,  color: '#38c2d1' },
-            { label: 'Expenses', val: totalExp,  color: 'var(--warn)' },
-            { label: 'Profit',   val: Math.abs(netProfit), color: netProfit >= 0 ? 'var(--success)' : 'var(--danger)' },
+            { label: 'Revenue', val: totalRev, color: '#38c2d1' },
+            { label: 'Expenses', val: totalExp, color: 'var(--warn)' },
+            { label: 'Profit', val: Math.abs(netProfit), color: netProfit >= 0 ? 'var(--success)' : 'var(--danger)' },
           ].map(item => (
             <div key={item.label} style={{ marginBottom: 14 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -90,7 +128,7 @@ export default function Reports() {
             : data.topProducts.map((p, i) => (
               <div key={p.name} style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 12, color: 'var(--text2)' }}>#{i+1} {p.name}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text2)' }}>#{i + 1} {p.name}</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{p.total_qty} units</span>
                 </div>
                 <div style={{ background: 'var(--bg3)', borderRadius: 4, height: 10, overflow: 'hidden' }}>
@@ -127,20 +165,22 @@ export default function Reports() {
 
         {/* Stock Status */}
         <div style={{ ...card, padding: 18 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 14 }}>Stock Status</div>
-          {[
-            { label: 'Low Stock Items',    val: data.lowStockCount,   color: 'var(--warn)',    bg: 'var(--warn-bg)'    },
-            { label: 'Out of Stock Items', val: data.outOfStockCount, color: 'var(--danger)',  bg: 'var(--danger-bg)'  },
-          ].map(item => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: item.bg, borderRadius: 10, marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: item.color, fontWeight: 500 }}>{item.label}</span>
-              <span style={{ fontSize: 22, fontWeight: 700, color: item.color }}>{item.val}</span>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 14 }}>Stock Alerts</div>
+
+          {/* Summary counts */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+            <div style={{ padding: '12px 16px', background: 'var(--warn-bg)', borderRadius: 10 }}>
+              <div style={{ fontSize: 11, color: 'var(--warn)', textTransform: 'uppercase', letterSpacing: .8, marginBottom: 4 }}>Low Stock</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--warn)' }}>{data.lowStockCount}</div>
             </div>
-          ))}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--accent-light)', borderRadius: 10 }}>
-            <span style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 500 }}>Total Products</span>
-            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent)' }}>{data.lowStockCount + data.outOfStockCount}</span>
+            <div style={{ padding: '12px 16px', background: 'var(--danger-bg)', borderRadius: 10 }}>
+              <div style={{ fontSize: 11, color: 'var(--danger)', textTransform: 'uppercase', letterSpacing: .8, marginBottom: 4 }}>Out of Stock</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--danger)' }}>{data.outOfStockCount}</div>
+            </div>
           </div>
+
+          {/* Low stock items list */}
+          <LowStockList />
         </div>
       </div>
     </div>
