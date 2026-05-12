@@ -1,9 +1,11 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
+import { useState, useEffect } from 'react';
+import api from '../services/api';
 import {
   LayoutDashboard, ShoppingCart, Package, Tag,
-  Truck, Users, UserCheck, Receipt, Wallet, LogOut, Sun, Moon, BarChart2
+  Truck, Users, UserCheck, Receipt, Wallet, LogOut, Sun, Moon, BarChart2, Bell
 } from 'lucide-react';
 
 const links = [
@@ -19,8 +21,35 @@ const links = [
   { to: '/reports', label: 'Reports', icon: BarChart2, roles: ['admin', 'manager'] },
 ];
 
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
+  const [lowStockCount, setLowStockCount] = useState(0);
+  const [lowStockItems, setLowStockItems] = useState<{ name: string; stock: number; reorder_lvl: number }[]>([]);
+  const [showNotif, setShowNotif] = useState(false);
+
+  useEffect(() => {
+    const fetchLowStock = async () => {
+      try {
+        const { data } = await api.get('/products');
+        const low = data.filter((p: any) => p.stock <= p.reorder_lvl);
+        setLowStockCount(low.length);
+        setLowStockItems(low);
+      } catch (e) { }
+    };
+    fetchLowStock();
+    const interval = setInterval(fetchLowStock, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-notif]')) setShowNotif(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
   const { isDark, toggle } = useThemeStore();
   const navigate = useNavigate();
 
@@ -123,12 +152,74 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Main */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Topbar */}
+        {/* Topbar */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
           padding: '0 24px', height: 52,
           background: 'var(--bg2)', borderBottom: '1px solid var(--border)',
-          flexShrink: 0
+          flexShrink: 0, gap: 16, position: 'relative'
         }}>
+          {/* Bell notification */}
+          <div style={{ position: 'relative' }} data-notif>
+            <button onClick={() => setShowNotif(!showNotif)} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center',
+              color: 'var(--text2)', position: 'relative'
+            }}>
+              <Bell size={18} />
+              {lowStockCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: 0, right: 0,
+                  width: 16, height: 16, borderRadius: '50%',
+                  background: 'var(--danger)', color: '#fff',
+                  fontSize: 9, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>{lowStockCount > 9 ? '9+' : lowStockCount}</span>
+              )}
+            </button>
+
+            {showNotif && (
+              <div style={{
+                position: 'absolute', top: 44, right: 0,
+                width: 300, background: 'var(--bg2)',
+                border: '1px solid var(--border)', borderRadius: 12,
+                boxShadow: 'var(--shadow2)', zIndex: 999, overflow: 'hidden'
+              }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Stock Alerts</span>
+                  <span style={{ fontSize: 11, color: 'var(--text3)' }}>{lowStockCount} items</span>
+                </div>
+                <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+                  {lowStockItems.length === 0
+                    ? <div style={{ padding: 20, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>All items well stocked!</div>
+                    : lowStockItems.map((item, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--border)' }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{item.name}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text3)' }}>Reorder level: {item.reorder_lvl}</div>
+                        </div>
+                        <span style={{
+                          padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                          background: item.stock === 0 ? 'var(--danger-bg)' : 'var(--warn-bg)',
+                          color: item.stock === 0 ? 'var(--danger)' : 'var(--warn)'
+                        }}>
+                          {item.stock === 0 ? 'Out' : item.stock + ' left'}
+                        </span>
+                      </div>
+                    ))
+                  }
+                </div>
+                <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+                  <button onClick={() => { setShowNotif(false); navigate('/products'); }}
+                    style={{ background: 'none', border: 'none', color: '#38c2d1', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    View all products →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Dark mode toggle */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {isDark ? <Moon size={14} color='var(--text2)' /> : <Sun size={14} color='var(--text2)' />}
             <div onClick={handleToggle} style={{
