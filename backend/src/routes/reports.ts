@@ -26,18 +26,26 @@ router.get('/dashboard', async (req, res) => {
       ORDER BY s.created_at DESC
       LIMIT 5
     `);
+    const [lowStockItems]: any = await pool.execute(`
+      SELECT name, stock, reorder_lvl 
+      FROM products 
+      WHERE stock <= reorder_lvl 
+      ORDER BY stock ASC
+    `);
 
     res.json({
-      totalRevenue: totalRev[0].total,
-      totalExpenses: totalExp[0].total,
-      netProfit: totalRev[0].total - totalExp[0].total,
-      totalSales: totalSales[0].count,
-      lowStockCount: lowStock[0].count,
+      totalRevenue:    totalRev[0].total,
+      totalExpenses:   totalExp[0].total,
+      netProfit:       totalRev[0].total - totalExp[0].total,
+      totalSales:      totalSales[0].count,
+      lowStockCount:   lowStock[0].count,
       outOfStockCount: outStock[0].count,
       topProducts,
-      recentSales
+      recentSales,
+      lowStockItems
     });
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });

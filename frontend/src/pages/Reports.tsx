@@ -13,43 +13,7 @@ interface ReportData {
   outOfStockCount: number;
   topProducts: { name: string; total_qty: number }[];
   recentSales: { id: string; cashier_name: string; total: number; created_at: string }[];
-}
-
-function LowStockList() {
-  const [items, setItems] = useState<any[]>([]);
-
-  useEffect(() => {
-    api.get('/products').then(({ data }) => {
-      const low = data.filter((p: any) => p.stock <= p.reorder_lvl);
-      setItems(low);
-    });
-  }, []);
-
-  if (items.length === 0) return (
-    <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text3)', fontSize: 13 }}>
-      All items well stocked!
-    </div>
-  );
-
-  return (
-    <div>
-      {items.map((item, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{item.name}</div>
-            <div style={{ fontSize: 11, color: 'var(--text3)' }}>Reorder level: {item.reorder_lvl}</div>
-          </div>
-          <span style={{
-            padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-            background: item.stock === 0 ? 'var(--danger-bg)' : 'var(--warn-bg)',
-            color: item.stock === 0 ? 'var(--danger)' : 'var(--warn)'
-          }}>
-            {item.stock === 0 ? 'Out of stock' : item.stock + ' left'}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
+  lowStockItems: { name: string; stock: number; reorder_lvl: number }[];
 }
 
 export default function Reports() {
@@ -167,7 +131,6 @@ export default function Reports() {
         <div style={{ ...card, padding: 18 }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 14 }}>Stock Alerts</div>
 
-          {/* Summary counts */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
             <div style={{ padding: '12px 16px', background: 'var(--warn-bg)', borderRadius: 10 }}>
               <div style={{ fontSize: 11, color: 'var(--warn)', textTransform: 'uppercase', letterSpacing: .8, marginBottom: 4 }}>Low Stock</div>
@@ -179,8 +142,25 @@ export default function Reports() {
             </div>
           </div>
 
-          {/* Low stock items list */}
-          <LowStockList />
+          {/* Items list */}
+          {data.lowStockItems?.length === 0
+            ? <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text3)', fontSize: 13 }}>All items well stocked!</div>
+            : data.lowStockItems?.map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{item.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>Reorder level: {item.reorder_lvl}</div>
+                </div>
+                <span style={{
+                  padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                  background: item.stock === 0 ? 'var(--danger-bg)' : 'var(--warn-bg)',
+                  color: item.stock === 0 ? 'var(--danger)' : 'var(--warn)'
+                }}>
+                  {item.stock === 0 ? 'Out of stock' : item.stock + ' left'}
+                </span>
+              </div>
+            ))
+          }
         </div>
       </div>
     </div>
