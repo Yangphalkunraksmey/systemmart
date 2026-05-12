@@ -1,27 +1,28 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import type { Product, Customer, CartItem } from '../types';
+import { Printer } from 'lucide-react';
 
 const card: React.CSSProperties = { background: 'var(--bg2)', borderRadius: 12, border: '1px solid var(--border)', boxShadow: 'var(--shadow)' };
 const inp: React.CSSProperties = { width: '100%', padding: '9px 12px', background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13 };
 const btn = (color = '#38c2d1', text = '#fff'): React.CSSProperties => ({ padding: '8px 16px', background: color, color: text, border: 'none', borderRadius: 8, fontWeight: 500, fontSize: 13, cursor: 'pointer' });
 
 export default function POS() {
-  const [products, setProducts]     = useState<Product[]>([]);
-  const [customers, setCustomers]   = useState<Customer[]>([]);
-  const [categories, setCategories] = useState<{id:string;name:string}[]>([]);
-  const [cart, setCart]             = useState<CartItem[]>([]);
-  const [search, setSearch]         = useState('');
-  const [filterCat, setFilterCat]   = useState('all');
-  const [discPct, setDiscPct]       = useState(0);
-  const [discType, setDiscType]     = useState('0');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [search, setSearch] = useState('');
+  const [filterCat, setFilterCat] = useState('all');
+  const [discPct, setDiscPct] = useState(0);
+  const [discType, setDiscType] = useState('0');
   const [customDisc, setCustomDisc] = useState('');
-  const [custId, setCustId]         = useState('');
+  const [custId, setCustId] = useState('');
   const [showCharge, setShowCharge] = useState(false);
-  const [payMethod, setPayMethod]   = useState('cash');
+  const [payMethod, setPayMethod] = useState('cash');
   const [cashReceived, setCashReceived] = useState('');
-  const [showReceipt, setShowReceipt]   = useState(false);
-  const [lastSale, setLastSale]         = useState<any>(null);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [lastSale, setLastSale] = useState<any>(null);
 
   const load = async () => {
     const [p, c, cat] = await Promise.all([api.get('/products'), api.get('/customers'), api.get('/categories')]);
@@ -35,23 +36,23 @@ export default function POS() {
       const ex = prev.find(i => i.product_id === p.id);
       if (ex) {
         if (ex.qty >= p.stock) return prev;
-        return prev.map(i => i.product_id === p.id ? { ...i, qty: i.qty+1, total: (i.qty+1)*i.price } : i);
+        return prev.map(i => i.product_id === p.id ? { ...i, qty: i.qty + 1, total: (i.qty + 1) * i.price } : i);
       }
       return [...prev, { product_id: p.id, name: p.name, price: Number(p.price), qty: 1, total: Number(p.price) }];
     });
   };
 
   const changeQty = (id: string, d: number) => {
-    setCart(prev => prev.map(i => i.product_id === id ? { ...i, qty: i.qty+d, total: (i.qty+d)*i.price } : i).filter(i => i.qty > 0));
+    setCart(prev => prev.map(i => i.product_id === id ? { ...i, qty: i.qty + d, total: (i.qty + d) * i.price } : i).filter(i => i.qty > 0));
   };
 
   const removeFromCart = (id: string) => setCart(prev => prev.filter(i => i.product_id !== id));
   const clearCart = () => { setCart([]); setDiscPct(0); setDiscType('0'); setCustId(''); };
 
   const subtotal = cart.reduce((a, i) => a + i.total, 0);
-  const discAmt  = subtotal * discPct / 100;
-  const total    = subtotal - discAmt;
-  const change   = (parseFloat(cashReceived) || 0) - total;
+  const discAmt = subtotal * discPct / 100;
+  const total = subtotal - discAmt;
+  const change = (parseFloat(cashReceived) || 0) - total;
 
   const onDiscChange = (val: string) => {
     setDiscType(val);
@@ -70,7 +71,7 @@ export default function POS() {
         change_given: payMethod === 'cash' ? change : 0,
         customer_id: custId || null
       });
-      setLastSale({ id: data.saleId, items: cart, subtotal, discPct, discAmt, total, payMethod, cashReceived: parseFloat(cashReceived), change, custId });
+      setLastSale({ id: data.saleId, items: [...cart], subtotal, discPct, discAmt, total, payMethod, cashReceived: parseFloat(cashReceived) || total, change, custId });
       setShowCharge(false); setShowReceipt(true);
       clearCart(); load();
     } catch (err: any) { alert(err.response?.data?.message || 'Error'); }
@@ -139,9 +140,9 @@ export default function POS() {
         <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
           {cart.length === 0
             ? <div style={{ textAlign: 'center', padding: 40, color: 'var(--text3)' }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>🛒</div>
-                <div style={{ fontSize: 13 }}>Tap a product to add</div>
-              </div>
+              <div style={{ fontSize: 36, marginBottom: 8 }}>🛒</div>
+              <div style={{ fontSize: 13 }}>Tap a product to add</div>
+            </div>
             : cart.map(item => (
               <div key={item.product_id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 10, ...card, marginBottom: 8 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -259,33 +260,93 @@ export default function POS() {
       {showReceipt && lastSale && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ ...card, padding: 24, width: 360 }}>
-            <div style={{ textAlign: 'center', marginBottom: 16, borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#38c2d1' }}>SystemMart</h2>
-              <div style={{ fontSize: 12, color: 'var(--text3)' }}>{new Date().toLocaleString()}</div>
+
+            {/* Printable area */}
+            <div id="receipt-print">
+              <div style={{ textAlign: 'center', marginBottom: 16, borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: '#38c2d1' }}>SystemMart</h2>
+                <div style={{ fontSize: 12, color: 'var(--text3)' }}>{new Date().toLocaleString()}</div>
+                <div style={{ fontSize: 12, color: 'var(--text3)' }}>Receipt #{lastSale.id?.slice(-6).toUpperCase() || '------'}</div>
+              </div>
+
+              {/* Items */}
+              {lastSale.items.map((item: CartItem) => (
+                <div key={item.product_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid var(--border)', fontSize: 13, color: 'var(--text)' }}>
+                  <span>{item.name} ×{item.qty}</span>
+                  <span>${item.total.toFixed(2)}</span>
+                </div>
+              ))}
+
+              {/* Discount */}
+              {lastSale.discPct > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 13, color: 'var(--danger)' }}>
+                  <span>Discount ({lastSale.discPct}%)</span>
+                  <span>-${lastSale.discAmt.toFixed(2)}</span>
+                </div>
+              )}
+
+              {/* Subtotal */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 13, color: 'var(--text2)', borderTop: '1px solid var(--border)', marginTop: 4 }}>
+                <span>Subtotal</span>
+                <span>${lastSale.subtotal.toFixed(2)}</span>
+              </div>
+
+              {/* Total */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: 18, fontWeight: 700, color: '#38c2d1' }}>
+                <span>TOTAL</span>
+                <span>${lastSale.total.toFixed(2)}</span>
+              </div>
+
+              {/* Payment info */}
+              {lastSale.payMethod === 'cash' && (
+                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Cash Received</span>
+                    <span>${lastSale.cashReceived.toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Change</span>
+                    <span>${lastSale.change.toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
+
+              {lastSale.payMethod !== 'cash' && (
+                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Payment Method</span>
+                    <span style={{ textTransform: 'capitalize' }}>{lastSale.payMethod}</span>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text3)', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                Thank you for shopping at SystemMart!
+              </div>
             </div>
-            {lastSale.items.map((item: CartItem) => (
-              <div key={item.product_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid var(--border)', fontSize: 13, color: 'var(--text)' }}>
-                <span>{item.name} ×{item.qty}</span>
-                <span>${item.total.toFixed(2)}</span>
-              </div>
-            ))}
-            {lastSale.discPct > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 13, color: 'var(--danger)' }}>
-                <span>Discount ({lastSale.discPct}%)</span>
-                <span>-${lastSale.discAmt.toFixed(2)}</span>
-              </div>
-            )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: 16, fontWeight: 700, color: '#38c2d1' }}>
-              <span>TOTAL</span><span>${lastSale.total.toFixed(2)}</span>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+              <button
+                onClick={() => window.print()}
+                style={{
+                  flex: 1, padding: '10px', border: 'none', borderRadius: 8,
+                  background: 'var(--bg3)', color: 'var(--text)',
+                  fontWeight: 500, fontSize: 13, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
+                }}>
+                <Printer size={15} /> Print
+              </button>
+              <button
+                onClick={() => setShowReceipt(false)}
+                style={{
+                  flex: 1, padding: '10px', border: 'none', borderRadius: 8,
+                  background: '#38c2d1', color: '#fff',
+                  fontWeight: 600, fontSize: 13, cursor: 'pointer'
+                }}>
+                Done
+              </button>
             </div>
-            {lastSale.payMethod === 'cash' && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text3)', marginBottom: 12 }}>
-                <span>Cash: ${lastSale.cashReceived.toFixed(2)}</span>
-                <span>Change: ${lastSale.change.toFixed(2)}</span>
-              </div>
-            )}
-            <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text3)', marginBottom: 16 }}>Thank you for shopping at SystemMart!</div>
-            <button onClick={() => setShowReceipt(false)} style={{ ...btn(), width: '100%', padding: '10px' }}>Done</button>
           </div>
         </div>
       )}
