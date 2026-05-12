@@ -7,16 +7,16 @@ import {
 } from 'lucide-react';
 
 const links = [
-  { to: '/dashboard',  label: 'Dashboard',    icon: LayoutDashboard },
-  { to: '/pos',        label: 'Point of Sale', icon: ShoppingCart    },
-  { to: '/products',   label: 'Products',      icon: Package         },
-  { to: '/categories', label: 'Categories',    icon: Tag             },
-  { to: '/suppliers',  label: 'Suppliers',     icon: Truck           },
-  { to: '/customers',  label: 'Customers',     icon: Users           },
-  { to: '/cashiers',   label: 'Cashiers',      icon: UserCheck       },
-  { to: '/sales',      label: 'Sales History', icon: Receipt         },
-  { to: '/expenses',   label: 'Expenses',      icon: Wallet          },
-  { to: '/reports', label: 'Reports', icon: BarChart2 },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'cashier'] },
+  { to: '/pos', label: 'Point of Sale', icon: ShoppingCart, roles: ['admin', 'manager', 'cashier'] },
+  { to: '/products', label: 'Products', icon: Package, roles: ['admin', 'manager'] },
+  { to: '/categories', label: 'Categories', icon: Tag, roles: ['admin', 'manager'] },
+  { to: '/suppliers', label: 'Suppliers', icon: Truck, roles: ['admin', 'manager'] },
+  { to: '/customers', label: 'Customers', icon: Users, roles: ['admin', 'manager'] },
+  { to: '/cashiers', label: 'Cashiers', icon: UserCheck, roles: ['admin'] },
+  { to: '/sales', label: 'Sales History', icon: Receipt, roles: ['admin', 'manager', 'cashier'] },
+  { to: '/expenses', label: 'Expenses', icon: Wallet, roles: ['admin', 'manager'] },
+  { to: '/reports', label: 'Reports', icon: BarChart2, roles: ['admin', 'manager'] },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -52,7 +52,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
-          {links.map(link => {
+          {links.filter(link => link.roles.includes(user?.role || '')).map(link => {
             const Icon = link.icon;
             return (
               <NavLink key={link.to} to={link.to} style={({ isActive }) => ({
@@ -64,22 +64,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 fontWeight: isActive ? 600 : 400,
                 transition: 'all .15s'
               })}
-              onMouseOver={e => {
-                const el = e.currentTarget as HTMLElement;
-                if (!el.getAttribute('aria-current')) {
-                  el.style.background = '#fff';
-                  el.style.color = '#1A2B3C';
-                  el.style.fontWeight = '600';
-                }
-              }}
-              onMouseOut={e => {
-                const el = e.currentTarget as HTMLElement;
-                if (!el.getAttribute('aria-current')) {
-                  el.style.background = 'transparent';
-                  el.style.color = 'rgba(255,255,255,0.85)';
-                  el.style.fontWeight = '400';
-                }
-              }}
+                onMouseOver={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  if (!el.getAttribute('aria-current')) {
+                    el.style.background = '#fff';
+                    el.style.color = '#1A2B3C';
+                    el.style.fontWeight = '600';
+                  }
+                }}
+                onMouseOut={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  if (!el.getAttribute('aria-current')) {
+                    el.style.background = 'transparent';
+                    el.style.color = 'rgba(255,255,255,0.85)';
+                    el.style.fontWeight = '400';
+                  }
+                }}
               >
                 <Icon size={16} />
                 <span>{link.label}</span>

@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
-import Login from './pages/Login';
 import Layout from './components/Layout';
+import RoleGuard from './components/RoleGuard';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import POS from './pages/POS';
@@ -26,17 +27,45 @@ export default function App() {
         <ProtectedRoute>
           <Layout>
             <Routes>
-              <Route path="/dashboard"    element={<Dashboard />} />
-              <Route path="/pos"          element={<POS />} />
-              <Route path="/products"     element={<Products />} />
-              <Route path="/categories"   element={<Categories />} />
-              <Route path="/suppliers"    element={<Suppliers />} />
-              <Route path="/customers"    element={<Customers />} />
-              <Route path="/cashiers"     element={<Cashiers />} />
-              <Route path="/expenses"     element={<Expenses />} />
-              <Route path="/sales"        element={<SalesHistory />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/"             element={<Navigate to="/dashboard" />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/pos"       element={<POS />} />
+              <Route path="/sales"     element={<SalesHistory />} />
+              <Route path="/products"  element={
+                <RoleGuard roles={['admin','manager']}>
+                  <Products />
+                </RoleGuard>
+              } />
+              <Route path="/categories" element={
+                <RoleGuard roles={['admin','manager']}>
+                  <Categories />
+                </RoleGuard>
+              } />
+              <Route path="/suppliers" element={
+                <RoleGuard roles={['admin','manager']}>
+                  <Suppliers />
+                </RoleGuard>
+              } />
+              <Route path="/customers" element={
+                <RoleGuard roles={['admin','manager']}>
+                  <Customers />
+                </RoleGuard>
+              } />
+              <Route path="/cashiers" element={
+                <RoleGuard roles={['admin']}>
+                  <Cashiers />
+                </RoleGuard>
+              } />
+              <Route path="/expenses" element={
+                <RoleGuard roles={['admin','manager']}>
+                  <Expenses />
+                </RoleGuard>
+              } />
+              <Route path="/reports" element={
+                <RoleGuard roles={['admin','manager']}>
+                  <Reports />
+                </RoleGuard>
+              } />
+              <Route path="/" element={<Navigate to="/dashboard" />} />
             </Routes>
           </Layout>
         </ProtectedRoute>
