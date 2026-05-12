@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import {
   LayoutDashboard, ShoppingCart, Package, Tag,
-  Truck, Users, UserCheck, Receipt, Wallet, LogOut, Sun, Moon
+  Truck, Users, UserCheck, Receipt, Wallet, LogOut, Sun, Moon, BarChart2
 } from 'lucide-react';
 
 const links = [
@@ -16,6 +16,7 @@ const links = [
   { to: '/cashiers',   label: 'Cashiers',      icon: UserCheck       },
   { to: '/sales',      label: 'Sales History', icon: Receipt         },
   { to: '/expenses',   label: 'Expenses',      icon: Wallet          },
+  { to: '/reports', label: 'Reports', icon: BarChart2 },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

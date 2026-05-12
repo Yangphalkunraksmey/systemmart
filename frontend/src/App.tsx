@@ -11,6 +11,7 @@ import Customers from './pages/Customers';
 import Cashiers from './pages/Cashiers';
 import Expenses from './pages/Expenses';
 import SalesHistory from './pages/SalesHistory';
+import Reports from './pages/Reports';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuthStore();
@@ -34,6 +35,7 @@ export default function App() {
               <Route path="/cashiers"     element={<Cashiers />} />
               <Route path="/expenses"     element={<Expenses />} />
               <Route path="/sales"        element={<SalesHistory />} />
+              <Route path="/reports" element={<Reports />} />
               <Route path="/"             element={<Navigate to="/dashboard" />} />
             </Routes>
           </Layout>
